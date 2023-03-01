@@ -10,7 +10,7 @@ use strict;
 use DateTime;
 use DateTime::Format::Strptime qw(strptime);
 use JSON;
-use JSON::Parse ':all';
+use JSON::Parse 'parse_json';
 use HTTP::Request ();
 use LWP::UserAgent;
 use URI::Escape;
@@ -44,8 +44,8 @@ sub get_channellist {
 sub getProgramUrl {
     my ($channelid, $days) = @_;
     my $date = DateTime->now();
-    $date = $date->add(days => $day);
-    $datestring = $date->strftime('%Y-%m-%d');
+    $date = $date->add(days => $days);
+    my $datestring = $date->strftime('%Y-%m-%d');
     my $url = $channeltemplate;
     $url =~ s/#id/$channelid/ig;
     $url =~ s/#date/$datestring/ig;
@@ -54,6 +54,7 @@ sub getProgramUrl {
 
 sub process_timeline4channel {
     my $channelid = @_;
+    printf("\tProcessing $channelid... ");
     for(my $day = 0;$day < $daytofetch;$day++) {
         my @programOfDay = get_json(getProgramUrl($channelid, $day));
         for my $slot( @programOfDay ) {
@@ -63,6 +64,7 @@ sub process_timeline4channel {
              my $description = $slot->{currentTopics};
         }
     }
+    printf("ready.\n");
 }
 
 sub open_File {
@@ -78,3 +80,15 @@ sub close_File {
     print $fh "\n</tv>\n\n\n";
     close $fh;
 }
+
+sub process {
+
+}
+
+printf("create EPG-file...\n");
+my $epgfile = open_File;
+printf("processing channels...\n");
+process;
+printf("finalize EPG-file...\n");
+close_File($epgfile);
+printf("Finished.\n");
