@@ -21,6 +21,7 @@ use Data::Dumper;
 my $listurl = "https://live.tvspielfilm.de/static/content/channel-list/livetv";
 my $channeltemplate = "https://live.tvspielfilm.de/static/broadcast/list/#id/#date";
 my $daytofetch = 7;
+my $epgfile = "xmltv-tvs.xml";
 
 sub get_json {
     my $url = @_;
@@ -51,10 +52,29 @@ sub getProgramUrl {
     return $url;
 }
 
-sub process_channel {
+sub process_timeline4channel {
     my $channelid = @_;
     for(my $day = 0;$day < $daytofetch;$day++) {
-        my $programOfDay = get_json(getProgramUrl($channelid, $day));
-
+        my @programOfDay = get_json(getProgramUrl($channelid, $day));
+        for my $slot( @programOfDay ) {
+             my $title = $slot->{title};
+             my $timestart = $slot->{timestart};
+             my $timeend = $slot->{timeend};
+             my $description = $slot->{currentTopics};
+        }
     }
+}
+
+sub open_File {
+    open(my $fh, '>', $epgfile) or die "Could not open file '$epgfile' $!";
+    print $fh "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
+    print $fh "<tv>\n";
+
+    return $fh;
+}
+
+sub close_File {
+    my $fh = @_;
+    print $fh "\n</tv>\n\n\n";
+    close $fh;
 }
