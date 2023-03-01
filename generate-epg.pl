@@ -24,7 +24,7 @@ my $daytofetch = 7;
 my $epgfile = "xmltv-tvs.xml";
 
 sub get_json {
-    my $url = @_;
+    my ($url) = @_;
     my $request = HTTP::Request->new(GET => $url);
     my $useragent = LWP::UserAgent->new(keep_alive => 1);
     $useragent->agent('Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:86.0) Gecko/20100101 Firefox/86.0');
@@ -53,7 +53,7 @@ sub getProgramUrl {
 }
 
 sub process_timeline4channel {
-    my $channelid = @_;
+    my ($channelid) = @_;
     printf("\tProcessing $channelid... ");
     for(my $day = 0;$day < $daytofetch;$day++) {
         my @programOfDay = get_json(getProgramUrl($channelid, $day));
@@ -76,7 +76,7 @@ sub open_File {
 }
 
 sub close_File {
-    my $fh = @_;
+    my ($fh) = @_;
     print $fh "\n</tv>\n\n\n";
     close $fh;
 }
@@ -86,9 +86,9 @@ sub process {
 }
 
 printf("create EPG-file...\n");
-my $epgfile = open_File;
+my $epgfilehandler = open_File;
 printf("processing channels...\n");
 process;
 printf("finalize EPG-file...\n");
-close_File($epgfile);
+close_File($epgfilehandler);
 printf("Finished.\n");
