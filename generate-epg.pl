@@ -64,8 +64,8 @@ sub process_timeline4channel {
              my $description = $slot->{text};
 
              print($filehandler, "<programme start=\"".$timestart->strftime('%Y%m%d%H%M')."00000 +0000\" stop=\"".$timeend->strftime('%Y%m%d%H%M')."00000 +0000\" channel=\"".$channelid."\">\n");
-             print($filehandler, "<title lang=\"DE\"><![CDATA[".$title."]]></title>\n");
-             print($filehandler, "<desc lang=\"DE\"><![CDATA[".$description."]]></desc>\n");
+             print($filehandler, "<title lang=\"de\"><![CDATA[".$title."]]></title>\n");
+             print($filehandler, "<desc lang=\"de\"><![CDATA[".$description."]]></desc>\n");
              print($filehandler, "</programme>\n");
         }
     }
@@ -87,13 +87,26 @@ sub close_File {
 }
 
 sub process {
-
+    my ($fh) = @_;
+    my @channellist = get_channellist;
+    for my $channel( @channellist ) {
+        my $channelid = $channel->{id};
+        my $channelname = $channel->{name};
+        my $logo = $channel->{image_small}->{url};
+        print($fh, "<channel id=\"".$channelid."\">\n");
+        print($fh, "<display-name lang=\"de\"><![CDATA[".$channelname."]]></display-name>\n");
+        print($fh, "<icon src=\"".$logo."\" />\n");
+        printf($fh, "</channel>\n");
+    }
+    for my $channel( @channellist ) {
+        process_timeline4channel($channel->{id}, $fh);
+    }
 }
 
 printf("create EPG-file...\n");
 my $epgfilehandler = open_File;
 printf("processing channels...\n");
-process;
+process($epgfilehandler);
 printf("finalize EPG-file...\n");
 close_File($epgfilehandler);
 printf("Finished.\n");
