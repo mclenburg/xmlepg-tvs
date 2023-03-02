@@ -22,7 +22,7 @@ use open qw( :std :encoding(UTF-8) );
 my $listurl = "https://live.tvspielfilm.de/static/content/channel-list/livetv";
 my $channeltemplate = "https://live.tvspielfilm.de/static/broadcast/list/#id/#date";
 my $daytofetch = 7;
-my $epgfile = "/mnt/ramdisk/xmltv-tvs.xml";
+my $epgfile = "xmltv-tvs.xml";
 
 sub get_json {
     my ($url) = @_;
@@ -105,6 +105,11 @@ sub process {
     for my $channel( @channellist ) {
         process_timeline4channel($channel->{id}, $fh, $channel->{name});
     }
+}
+
+if(defined $ENV{EPGFILEPATH}) {
+    my $sep = File::Spec->catfile('', '');
+    $epgfile = $ENV{EPGFILEPATH}.$sep.$epgfile;
 }
 
 printf("create EPG-file...\n");
