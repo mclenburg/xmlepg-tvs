@@ -22,7 +22,7 @@ use open qw( :std :encoding(UTF-8) );
 my $listurl = "https://live.tvspielfilm.de/static/content/channel-list/livetv";
 my $channeltemplate = "https://live.tvspielfilm.de/static/broadcast/list/#id/#date";
 my $daytofetch = 7;
-my $epgfile = "xmltv-tvs.xml";
+my $epgfile = "ramdisk/xmltv-tvs.xml";
 
 sub get_json {
     my ($url) = @_;
