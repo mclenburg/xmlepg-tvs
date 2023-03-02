@@ -53,15 +53,20 @@ sub getProgramUrl {
 }
 
 sub process_timeline4channel {
-    my ($channelid) = @_;
+    my ($channelid, $filehandler) = @_;
     printf("\tProcessing $channelid... ");
     for(my $day = 0;$day < $daytofetch;$day++) {
         my @programOfDay = get_json(getProgramUrl($channelid, $day));
         for my $slot( @programOfDay ) {
              my $title = $slot->{title};
-             my $timestart = $slot->{timestart};
-             my $timeend = $slot->{timeend};
-             my $description = $slot->{currentTopics};
+             my $timestart = DateTime->from_epoch($slot->{timestart});
+             my $timeend = DateTime->from_epoch($slot->{timeend});
+             my $description = $slot->{text};
+
+             print($filehandler, "<programme start=\"".$timestart->strftime('%Y%m%d%H%M')."00000 +0000\" stop=\"".$timeend->strftime('%Y%m%d%H%M')."00000 +0000\" channel=\"".$channelid."\">\n");
+             print($filehandler, "<title lang=\"DE\"><![CDATA[".$title."]]></title>\n");
+             print($filehandler, "<desc lang=\"DE\"><![CDATA[".$description."]]></desc>\n");
+             print($filehandler, "</programme>\n");
         }
     }
     printf("ready.\n");
