@@ -17,6 +17,7 @@ use URI::Escape;
 use UUID::Tiny ':std';
 use File::Which;
 use Data::Dumper;
+use open qw( :std :encoding(UTF-8) );
 
 my $listurl = "https://live.tvspielfilm.de/static/content/channel-list/livetv";
 my $channeltemplate = "https://live.tvspielfilm.de/static/broadcast/list/#id/#date";
@@ -53,20 +54,23 @@ sub getProgramUrl {
 }
 
 sub process_timeline4channel {
-    my ($channelid, $filehandler) = @_;
-    printf("\tProcessing $channelid... ");
+    my ($channelid, $filehandler, $channelname) = @_;
+    printf("\tProcessing $channelname... ");
     for(my $day = 0;$day < $daytofetch;$day++) {
         my @programOfDay = get_json(getProgramUrl($channelid, $day));
         for my $slot( @programOfDay ) {
              my $title = $slot->{title};
              my $timestart = DateTime->from_epoch($slot->{timestart});
              my $timeend = DateTime->from_epoch($slot->{timeend});
-             my $description = $slot->{text};
+             my $description = " ";
+             if(defined $slot->{text}) {
+                 $description = $slot->{text};
+             }
 
-             print($filehandler, "<programme start=\"".$timestart->strftime('%Y%m%d%H%M')."00000 +0000\" stop=\"".$timeend->strftime('%Y%m%d%H%M')."00000 +0000\" channel=\"".$channelid."\">\n");
-             print($filehandler, "<title lang=\"de\"><![CDATA[".$title."]]></title>\n");
-             print($filehandler, "<desc lang=\"de\"><![CDATA[".$description."]]></desc>\n");
-             print($filehandler, "</programme>\n");
+             print $filehandler "<programme start=\"".$timestart->strftime('%Y%m%d%H%M')."00000 +0000\" stop=\"".$timeend->strftime('%Y%m%d%H%M')."00000 +0000\" channel=\"".$channelid."\">\n";
+             print $filehandler "<title lang=\"de\"><![CDATA[".$title."]]></title>\n";
+             print $filehandler "<desc lang=\"de\"><![CDATA[".$description."]]></desc>\n";
+             print $filehandler "</programme>\n";
         }
     }
     printf("ready.\n");
@@ -93,13 +97,13 @@ sub process {
         my $channelid = $channel->{id};
         my $channelname = $channel->{name};
         my $logo = $channel->{image_small}->{url};
-        print($fh, "<channel id=\"".$channelid."\">\n");
-        print($fh, "<display-name lang=\"de\"><![CDATA[".$channelname."]]></display-name>\n");
-        print($fh, "<icon src=\"".$logo."\" />\n");
-        printf($fh, "</channel>\n");
+        print $fh "<channel id=\"".$channelid."\">\n";
+        print $fh "<display-name lang=\"de\"><![CDATA[".$channelname."]]></display-name>\n";
+        print $fh "<icon src=\"".$logo."\" />\n";
+        print $fh "</channel>\n";
     }
     for my $channel( @channellist ) {
-        process_timeline4channel($channel->{id}, $fh);
+        process_timeline4channel($channel->{id}, $fh, $channel->{name});
     }
 }
 
